@@ -1,0 +1,9 @@
+<aspectj>
+	<aspects>
+		<aspect name="com.drugstore.client.aspect.PropertyChangeListenerAspect"/>
+	</aspects>
+
+	<weaver options="-verbose -showWeaveInfo">
+		<include within="com.drugstore.client.ws.*"/>
+	</weaver>
+</aspectj>

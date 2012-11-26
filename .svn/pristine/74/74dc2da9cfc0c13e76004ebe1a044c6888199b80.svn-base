@@ -1,0 +1,311 @@
+﻿SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
+
+CREATE SCHEMA IF NOT EXISTS `drugstore` DEFAULT CHARACTER SET utf8 COLLATE utf8_bin ;
+USE `drugstore` ;
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`Manufacturer`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`Manufacturer` (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR(45) NOT NULL ,
+  `Country` VARCHAR(45) NOT NULL ,
+  `Contact` VARCHAR(45) NULL ,
+  `ContactPhone` VARCHAR(45) NULL ,
+  PRIMARY KEY (`Id`) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`PrescriptionType`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`PrescriptionType` (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR(45) NOT NULL ,
+  PRIMARY KEY (`Id`) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`Drug`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`Drug` (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `Code` VARCHAR(45) NOT NULL ,
+  `Name` VARCHAR(100) NOT NULL ,
+  `NumberOfPills` INT NOT NULL ,
+  `OwningCost` INT NOT NULL ,
+  `SellingCost` INT NOT NULL ,
+  `ManufacturerId` INT NOT NULL ,
+  `PrescriptionTypeId` INT NOT NULL ,
+  PRIMARY KEY (`Id`) ,
+  INDEX `fk_Drug_Manufacturer` (`ManufacturerId` ASC) ,
+  INDEX `fk_Drug_PrescriptionType1` (`PrescriptionTypeId` ASC) ,
+  CONSTRAINT `fk_Drug_Manufacturer`
+    FOREIGN KEY (`ManufacturerId` )
+    REFERENCES `drugstore`.`Manufacturer` (`Id` )
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Drug_PrescriptionType1`
+    FOREIGN KEY (`PrescriptionTypeId` )
+    REFERENCES `drugstore`.`PrescriptionType` (`Id` )
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`SocialSecurityProvider`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`SocialSecurityProvider` (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR(100) NOT NULL ,
+  PRIMARY KEY (`Id`) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`Patient`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`Patient` (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR(45) NOT NULL ,
+  `Surname` VARCHAR(45) NOT NULL ,
+  `SSN` VARCHAR(45) NOT NULL ,
+  `Address` VARCHAR(250) NULL ,
+  `HomePhone` VARCHAR(45) NULL ,
+  `Gsm` VARCHAR(45) NULL ,
+  `Email` VARCHAR(45) NULL ,
+  `SocialSecurityProviderId` INT NULL ,
+  PRIMARY KEY (`Id`) ,
+  INDEX `fk_Patient_SocialSecurityProvider1` (`SocialSecurityProviderId` ASC) ,
+  CONSTRAINT `fk_Patient_SocialSecurityProvider1`
+    FOREIGN KEY (`SocialSecurityProviderId` )
+    REFERENCES `drugstore`.`SocialSecurityProvider` (`Id` )
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`Doctor`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`Doctor` (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR(45) NOT NULL ,
+  `Surname` VARCHAR(45) NOT NULL ,
+  `Expertise` VARCHAR(45) NULL ,
+  PRIMARY KEY (`Id`) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`ContainerType`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`ContainerType` (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR(45) NOT NULL ,
+  PRIMARY KEY (`Id`) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`Container`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`Container` (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR(45) NOT NULL ,
+  `ContainerTypeId` INT NOT NULL ,
+  `ParentId` INT NULL ,
+  PRIMARY KEY (`Id`) ,
+  INDEX `fk_Container_ContainerType1` (`ContainerTypeId` ASC) ,
+  INDEX `fk_Container_Container1` (`ParentId` ASC) ,
+  CONSTRAINT `fk_Container_ContainerType1`
+    FOREIGN KEY (`ContainerTypeId` )
+    REFERENCES `drugstore`.`ContainerType` (`Id` )
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Container_Container1`
+    FOREIGN KEY (`ParentId` )
+    REFERENCES `drugstore`.`Container` (`Id` )
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`Prescription`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`Prescription` (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `Date` DATE NOT NULL ,
+  `PrescriptionTypeId` INT NOT NULL ,
+  `DoctorId` INT NOT NULL ,
+  `PatientId` INT NOT NULL ,
+  PRIMARY KEY (`Id`) ,
+  INDEX `fk_Prescription_PrescriptionType1` (`PrescriptionTypeId` ASC) ,
+  INDEX `fk_Prescription_Doctor1` (`DoctorId` ASC) ,
+  INDEX `fk_Prescription_Patient1` (`PatientId` ASC) ,
+  CONSTRAINT `fk_Prescription_PrescriptionType1`
+    FOREIGN KEY (`PrescriptionTypeId` )
+    REFERENCES `drugstore`.`PrescriptionType` (`Id` )
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Prescription_Doctor1`
+    FOREIGN KEY (`DoctorId` )
+    REFERENCES `drugstore`.`Doctor` (`Id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Prescription_Patient1`
+    FOREIGN KEY (`PatientId` )
+    REFERENCES `drugstore`.`Patient` (`Id` )
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`PrescriptionLineItem`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`PrescriptionLineItem` (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `Quantitiy` INT NOT NULL ,
+  `Usage` INT NULL ,
+  `PrescriptionId` INT NOT NULL ,
+  `DrugId` INT NOT NULL ,
+  PRIMARY KEY (`Id`) ,
+  INDEX `fk_PrescriptionLineItem_Prescription1` (`PrescriptionId` ASC) ,
+  INDEX `fk_PrescriptionLineItem_Drug1` (`DrugId` ASC) ,
+  CONSTRAINT `fk_PrescriptionLineItem_Prescription1`
+    FOREIGN KEY (`PrescriptionId` )
+    REFERENCES `drugstore`.`Prescription` (`Id` )
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_PrescriptionLineItem_Drug1`
+    FOREIGN KEY (`DrugId` )
+    REFERENCES `drugstore`.`Drug` (`Id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`Agreement`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`Agreement` (
+  `Id` INT NOT NULL AUTO_INCREMENT,
+  `StartingDate` DATE NOT NULL ,
+  `ExpireDate` DATE NOT NULL ,
+  `SocialSecurityProviderId` INT NOT NULL ,
+  PRIMARY KEY (`Id`) ,
+  INDEX `fk_Agreement_SocialSecurityProvider1` (`SocialSecurityProviderId` ASC) ,
+  CONSTRAINT `fk_Agreement_SocialSecurityProvider1`
+    FOREIGN KEY (`SocialSecurityProviderId` )
+    REFERENCES `drugstore`.`SocialSecurityProvider` (`Id` )
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`DrugContainer`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`DrugContainer` (
+  `ContainerId` INT NOT NULL ,
+  `DrugId` INT NOT NULL ,
+  `Quantitiy` INT NOT NULL ,
+  PRIMARY KEY (`ContainerId`, `DrugId`) ,
+  INDEX `fk_Container_has_Drug_Drug1` (`DrugId` ASC) ,
+  INDEX `fk_Container_has_Drug_Container1` (`ContainerId` ASC) ,
+  CONSTRAINT `fk_Container_has_Drug_Container1`
+    FOREIGN KEY (`ContainerId` )
+    REFERENCES `drugstore`.`Container` (`Id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Container_has_Drug_Drug1`
+    FOREIGN KEY (`DrugId` )
+    REFERENCES `drugstore`.`Drug` (`Id` )
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`AlternativeDrug`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`AlternativeDrug` (
+  `Drug1Id` INT NOT NULL ,
+  `Drug2Id` INT NOT NULL ,
+  PRIMARY KEY (`Drug1Id`, `Drug2Id`) ,
+  INDEX `fk_Drug_has_Drug_Drug2` (`Drug2Id` ASC) ,
+  INDEX `fk_Drug_has_Drug_Drug1` (`Drug1Id` ASC) ,
+  CONSTRAINT `fk_Drug_has_Drug_Drug1`
+    FOREIGN KEY (`Drug1Id` )
+    REFERENCES `drugstore`.`Drug` (`Id` )
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Drug_has_Drug_Drug2`
+    FOREIGN KEY (`Drug2Id` )
+    REFERENCES `drugstore`.`Drug` (`Id` )
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`User`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`User` (
+  `ID` INT NOT NULL AUTO_INCREMENT,
+  `Username` VARCHAR(45) NOT NULL ,
+  `PasswordHash` VARCHAR(45) NOT NULL ,
+  PRIMARY KEY (`ID`) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`Role`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`Role` (
+  `ID` INT NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR(45) NOT NULL ,
+  PRIMARY KEY (`ID`) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `drugstore`.`UserRole`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `drugstore`.`UserRole` (
+  `UserID` INT NOT NULL ,
+  `RoleID` INT NOT NULL ,
+  PRIMARY KEY (`UserID`, `RoleID`) ,
+  INDEX `fk_User_has_Role_Role1` (`RoleID` ASC) ,
+  INDEX `fk_User_has_Role_User1` (`UserID` ASC) ,
+  CONSTRAINT `fk_User_has_Role_User1`
+    FOREIGN KEY (`UserID` )
+    REFERENCES `drugstore`.`User` (`ID` )
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_User_has_Role_Role1`
+    FOREIGN KEY (`RoleID` )
+    REFERENCES `drugstore`.`Role` (`ID` )
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+-- INDEXES --
+ALTER TABLE `drugstore`.`patient` ADD INDEX `INDX_Patient_SSN` USING HASH(`SSN`);
+ALTER TABLE `drugstore`.`prescription` ADD INDEX `INDX_Patient_DatePatientId` USING BTREE(`Date`);
+ALTER TABLE `drugstore`.`user` ADD UNIQUE INDEX `INDX_User_Username` USING HASH(`Username`);
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+
+
+

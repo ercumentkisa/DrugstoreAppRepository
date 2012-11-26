@@ -1,0 +1,53 @@
+-- SELECT STATEMENTS --
+-- Find the alternative drug where alternative's pills are cheaper
+select d2.* from drugstore.drug d, drugstore.drug d2, drugstore.alternativedrug ad where d.ID = ad.drug1Id AND d2.ID = ad.drug2Id
+AND (d.SellingCost/d.NumberOfPills)>=(d2.SellingCost/d2.NumberOfPills);
+
+-- Select given patient if drugstore has an ongoing agreement with patient's SocialSecurityProvider --
+select p.* from drugstore.patient p, drugstore.socialsecurityprovider ssp, drugstore.agreement a
+where p.SocialSecurityProviderId = ssp.ID and a.SocialSecurityProviderId = ssp.ID and a.expireDate > CURDATE()
+AND p.ID = ?;
+
+-- Shows drugs stored in each container
+select d.Name as DrugName,
+       dc.Quantitiy as Adet,
+       kutu.ID as ContainerId,
+       kutu.Name as KutuAdi,
+       raf.Name as RafAdi,
+       dolap.Name as DolapAdi,
+       kat.Name as KatAdi,
+       depo.Name as DepoAdi
+       from drugstore.container kutu,
+            drugstore.container raf,
+            drugstore.container dolap,
+            drugstore.container kat,
+            drugstore.container depo,
+            drugstore.drug d,
+            drugstore.drugcontainer dc
+       where
+            kutu.ID = dc.ContainerId
+            and dc.DrugId = d.ID
+            and kutu.parentId = raf.ID
+            and raf.parentId = dolap.ID
+            and dolap.parentId = kat.ID
+            and kat.parentId = depo.ID
+       group by dc.DrugId, d.Name, kutu.ID;
+
+-- Shows how many drug of each type currently remains in system 
+select dc.drugId, d.Name as DrugName, sum(dc.Quantitiy) as TotalDrugCount
+      from drugstore.drug d, drugstore.drugcontainer dc
+      where dc.DrugId = d.ID
+      group by dc.DrugId, d.Name;
+
+
+-- Son 30 gün içerisinde hastalara hangi ilactan kac adet yazilmis bilgisini gösterir --
+select
+       pli.DrugId as DrugId,
+	   d.Name as DrugName,
+       sum(pli.Quantitiy) as TotalDrugsWritten
+  from drugstore.prescriptionlineitem pli, drugstore.prescription p, drugstore.drug d
+  where
+    p.Id = pli.PrescriptionId
+    AND pli.drugId = d.Id
+    AND DATE_SUB(CURDATE(),INTERVAL 30 DAY) <= p.Date
+  group by pli.drugId;

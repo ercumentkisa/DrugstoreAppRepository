@@ -1,0 +1,130 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.drugstore.client.ui.model;
+
+/**
+ *
+ * @author ekisa
+ */
+import com.drugstore.client.util.DrugstoreClientUtil;
+import com.drugstore.client.ws.Doctor;
+import com.drugstore.client.ws.Manufacturer;
+import com.drugstore.client.ws.Patient;
+import com.drugstore.client.ws.Drug;
+import com.drugstore.client.ws.PrescriptionType;
+import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Vector;
+
+
+import javax.swing.table.AbstractTableModel;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
+public class DrugTableModel extends AbstractTableModel implements Serializable {
+
+    public static final int NAME_INDEX = 0;
+    public static final int CODE_INDEX = 1;
+    public static final int MANUFACTURER_INDEX = 2;
+    public static final int PRESCRIPTION_TYPE_INDEX = 3;
+    public static final int NUMBER_OF_PILLS_INDEX = 4;
+    public static final int OWNING_COST_INDEX = 5;
+    public static final int SELLING_COST_INDEX = 6;
+    
+    protected String[] columnNames;
+    protected List<Drug> data = new ArrayList<Drug>();
+
+    public DrugTableModel() {
+        columnNames = new String[]{
+            "Name", "Code", "Manufacturer", "Prescription Type", "Number of Pills", "Owning Cost", "Selling Cost"
+        };
+    }
+
+    public String getColumnName(int column) {
+        return columnNames[column];
+    }
+
+    public boolean isCellEditable(int row, int column) {
+        return false;
+    }
+
+    public Class getColumnClass(int column) {
+        switch (column) {
+            case NAME_INDEX:
+                return String.class;
+            case CODE_INDEX:
+                return String.class;
+            case MANUFACTURER_INDEX:
+                return Manufacturer.class;
+            case PRESCRIPTION_TYPE_INDEX:
+                return PrescriptionType.class;
+            case NUMBER_OF_PILLS_INDEX:
+                return Long.class;
+            case OWNING_COST_INDEX:
+                return Long.class;
+            case SELLING_COST_INDEX:
+                return Long.class;
+            default:
+                return Object.class;
+        }
+    }
+
+    public Object getValueAt(int row, int column) {
+        Drug record = (Drug) data.get(row);
+        switch (column) {
+            case NAME_INDEX:
+                return record.getName();
+            case CODE_INDEX:
+                return record.getCode();
+            case MANUFACTURER_INDEX:
+                return record.getManufacturer().getName();
+            case PRESCRIPTION_TYPE_INDEX:
+                return record.getPrescriptionType().getName();
+            case NUMBER_OF_PILLS_INDEX:
+                return record.getNumberOfPills().toString();
+            case OWNING_COST_INDEX:
+                return record.getOwningCost().toString();
+            case SELLING_COST_INDEX:
+                return record.getSellingCost().toString();
+            default:
+                return new Object();
+        }
+    }
+
+    
+    public int getRowCount() {
+        return data.size();
+    }
+
+    public int getColumnCount() {
+        return columnNames.length;
+    }
+
+    public List<Drug> getData() {
+        if(data == null){
+            data = new ArrayList<Drug>();
+        }
+        return data;
+    }
+
+    public void setData(List<Drug> data) {
+        this.data = data;
+        this.fireTableDataChanged();
+    }
+    
+    public Drug getRowData(int row){
+        return data.get(row);
+    }
+    
+    public void removeData(int index){
+        data.remove(index);
+    }
+}
